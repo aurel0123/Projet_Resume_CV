@@ -1,3 +1,162 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root{
+  --primary-color: #4361ee;
+  --primary-color-light: #9ba4fa;
+  --primary-color-lighter: rgb(245, 249, 251);
+  --secondary-color: #3f85f79a;
+  --green-color-clair : #91f7bf;
+  --green-color-fonce : #08a045;
+  --red-color-clair : #f9bbc0;
+  --red-color-fonce : #ef233c;
+  --gray-color : #6c757d;
+  --white-color : #ffffff;
+}
+
+/* Custom Header */
+.Tete{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.Title{
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  padding-left: 30px;
+}
+
+.Menu{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+}
+
+ul {
+  gap: 10px;
+}
+li {
+  padding: 5px; 
+  border-radius: 5px;
+  text-align: center;
+}
+
+li:hover {
+  border: 1px solid var(--primary-color);
+  background-color: var(--primary-color-light);
+
+}
+
+
+.Menu a:hover{
+  color: var(--primary-color);
+  text-align: center;
+}
+
+
+.Menu a{
+ 
+  color: var(--white-color);
+}
+
+
+
+.Button{
+  padding-right: 30px;
+  display: flex;
+  align-items: center;
+  color: white;
+  cursor: pointer;
+}
+
+.Bar{
+  position: relative;
+  right: 50px;
+  width: 700px;
+  
+}
+
+.inBar{
+  border: none;
+  border-radius: 40px;
+}
+
+.inBar1{
+  border: none;
+  border-radius: 40px;
+}
+
+.Bout{
+  position: relative;
+  right: 95px;
+  border-radius: 50px;
+}
+
+.tex{
+   font-size: 23px;
+   font-weight: bold;
+   position: relative;
+  top: 20px;
+}
+
+
+/* Custom Content */
+
+.listBlocs{
+  display: flex; 
+  gap: 30px;
+  background-color: var(--primary-color-lighter);
+}
+
+.list{
+  padding-top: 40px;
+  padding-left: 70px;
+}
+
+.form1{
+  padding-top: 20px;
+}
+
+.empre{
+  position: relative;
+  bottom: 20px;
+}
+.blocmm{
+ position: relative;
+ top: 25px;
+}
+
+.but{
+  position: relative;
+  top: 20px;
+  left: 720px;
+}
+
+/* Custom Footer */
+
+.footer{
+  display: flex;
+  justify-content: center;
+  background-color: var(--white-color);
+  padding: 20px;
+}
+
+/* Custom register */
+.register{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Custom login */
+.login{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
