@@ -160,3 +160,11 @@ li:hover {
   align-items: center;
   height: 100vh;
 }
+
+.form-controle:focus {
+  color: #384551;
+  background-color: transparent;
+  border-color: #696cff;
+  outline: 0;
+  box-shadow: 0 0.125rem 0.25rem 0 rgba(105, 108, 255, 0.4);
+}
