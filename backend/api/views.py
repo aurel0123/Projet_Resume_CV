@@ -1,4 +1,4 @@
-from rest_framework import status, permissions , viewsets
+from rest_framework import status, permissions , viewsets , generics
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -12,6 +12,7 @@ import pypdf
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from django.contrib.auth.hashers import check_password
 #from .services import CVSearchService
 
 @api_view(['POST'])
@@ -80,7 +81,7 @@ class OffreEmploiViewSet(viewsets.ModelViewSet):
     queryset = OffreEmploi.objects.all()
     serializer_class = OffreEmploiSerializer
 
-    def get_permisson(self): 
+    def get_permissons(self): 
         if self.action in ['create' , 'update' , 'partial_update', 'destroy'] : 
             permission_classes = [IsRecruteurOrEntreprise]
         else : 
@@ -115,6 +116,28 @@ class OffreEmploiViewSet(viewsets.ModelViewSet):
         candidatures = Candidature.objects.filter(offre=offre)
         serializer = CandidatureSerializer(candidatures, many=True)
         return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def get_offres_par_recruteur(request):
+    """Retourne la liste des offres créées par le recruteur connecté."""
+    user = request.user
+    if hasattr(user, 'user_type') and user.user_type == CustomUser.Types.RECRUTEUR:
+        offres = OffreEmploi.objects.filter(recruteur__user=user)
+        serializer = OffreEmploiSerializer(offres, many=True)
+        return Response(serializer.data)
+    return Response({"detail": "Accès interdit"}, status=403)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def get_offres_par_entreprise(request):
+    """Retourne la liste des offres créées par l'entreprise connectée."""
+    user = request.user
+    if hasattr(user, 'user_type') and user.user_type == CustomUser.Types.ENTREPRISE:
+        offres = OffreEmploi.objects.filter(entreprise__user=user)
+        serializer = OffreEmploiSerializer(offres, many=True)
+        return Response(serializer.data)
+    return Response({"detail": "Accès interdit"}, status=403)
 
 class CandidatureViewSet(viewsets.ModelViewSet):
     serializer_class = CandidatureSerializer 
@@ -242,3 +265,161 @@ class SearchCVsAPIView(APIView):
         serializer = CVSerializer(ranked_cvs, many=True)
         
         return Response({"success": True, "cvs": serializer.data}) """
+
+@api_view(['PUT', 'GET'])
+@permission_classes([permissions.IsAuthenticated])
+def update_profile(request):
+    """
+    Update user profile information
+    """
+    try:
+        user = request.user
+        data = request.data
+
+        if request.method == 'GET':
+            # Récupérer les informations du profil
+            user_data = CustomUserSerializer(user).data
+            
+            # Ajouter les informations spécifiques selon le type d'utilisateur
+            if user.user_type == 'Entreprise':
+                try:
+                    entreprise = EntrepriseAddational.objects.get(user=user)
+                    user_data.update({
+                        'company_name': entreprise.name,
+                        'website': entreprise.website,
+                        'address': entreprise.address
+                    })
+                except EntrepriseAddational.DoesNotExist:
+                    pass
+                
+            elif user.user_type == 'Recruteur':
+                try:
+                    recruteur = RecruteurAddational.objects.get(user=user)
+                    user_data.update({
+                        'company': recruteur.company
+                    })
+                except RecruteurAddational.DoesNotExist:
+                    pass
+
+            return Response(user_data)
+
+        elif request.method == 'PUT':  # Correction de la syntaxe ici
+            # Validate required fields
+            required_fields = ['nom', 'prenom', 'phone']
+            for field in required_fields:
+                if field not in data:
+                    return Response(
+                        {'error': f'Le champ {field} est requis'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+            # Update user information
+            user.nom = data['nom']
+            user.prenom = data['prenom']
+            user.phone = data['phone']
+            
+            user.save()
+
+            serializer = CustomUserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response(
+            {'error': 'Une erreur est survenue lors de la mise à jour du profil'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@api_view(['PUT'])
+@permission_classes([permissions.IsAuthenticated])
+def update_password(request):
+    """
+    Update user password
+    """
+    try:
+        user = request.user
+        data = request.data
+
+        # Validate required fields
+        required_fields = ['current_password', 'new_password']
+        for field in required_fields:
+            if field not in data:
+                return Response(
+                    {'error': f'Le champ {field} est requis'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        # Verify current password
+        if not check_password(data['current_password'], user.password):
+            return Response(
+                {'error': 'Le mot de passe actuel est incorrect'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate new password
+        if len(data['new_password']) < 8:
+            return Response(
+                {'error': 'Le nouveau mot de passe doit contenir au moins 8 caractères'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Update password
+        user.set_password(data['new_password'])
+        user.save()
+
+        return Response(
+            {'message': 'Mot de passe mis à jour avec succès'},
+            status=status.HTTP_200_OK
+        )
+
+    except Exception as e:
+        return Response(
+            {'error': 'Une erreur est survenue lors du changement de mot de passe'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@api_view(['PUT'])
+@permission_classes([permissions.IsAuthenticated])
+def update_profile_image(request):
+    """
+    Update user profile image
+    """
+    try:
+        user = request.user
+        
+        if 'profile_image' not in request.FILES:
+            return Response(
+                {'error': 'Aucune image n\'a été fournie'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        image = request.FILES['profile_image']
+        
+        # Validate file size (800KB max)
+        if image.size > 800 * 1024:
+            return Response(
+                {'error': 'La taille de l\'image ne doit pas dépasser 800KB'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate file type
+        allowed_types = ['image/jpeg', 'image/png', 'image/gif']
+        if image.content_type not in allowed_types:
+            return Response(
+                {'error': 'Le type de fichier doit être JPG, PNG ou GIF'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Save the image
+        user.profile_image = image
+        user.save()
+
+        return Response(
+            {'message': 'Photo de profil mise à jour avec succès'},
+            status=status.HTTP_200_OK
+        )
+
+    except Exception as e:
+        return Response(
+            {'error': 'Une erreur est survenue lors de la mise à jour de la photo de profil'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

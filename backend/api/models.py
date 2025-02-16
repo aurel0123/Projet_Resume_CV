@@ -24,6 +24,8 @@ class LowercaseEmailField(models.EmailField):
 
 class CustomUser(AbstractBaseUser , PermissionsMixin):
     email = LowercaseEmailField(_('email address'), unique=True)
+    nom = models.CharField(_('nom'), max_length=150, blank=True)
+    prenom = models.CharField(_('prénom'), max_length=150, blank=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(default=timezone.now)
@@ -134,14 +136,25 @@ class Candidat(CustomUser):
         print("Je suis un candidat")
 
 class OffreEmploi(models.Model):
+    TYPE_EMPLOI_CHOICES = [
+        ('CDI', 'CDI'),
+        ('CDD', 'CDD'),
+        ('Stage', 'Stage'),
+        ('Freelance', 'Freelance'),
+        ('Temporaire', 'Temporaire'),
+    ]
+
     entreprise = models.ForeignKey(EntrepriseAddational, on_delete=models.CASCADE, related_name="offres_entreprise", null=True, blank=True)
     recruteur = models.ForeignKey(RecruteurAddational, on_delete=models.CASCADE, related_name="offres_recruteur", null=True, blank=True)
     titre = models.CharField(max_length=255)
     description = models.TextField()
+    type_emploi = models.CharField(max_length=20, choices=TYPE_EMPLOI_CHOICES, default='CDI')
     date_publication = models.DateTimeField(auto_now_add=True)
     date_expiration = models.DateTimeField(null=True, blank=True, default=timezone.now)
     localisation = models.CharField(max_length=255)
     salaire = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    negociable = models.BooleanField(default=False)
+    hideSalary = models.BooleanField(default=False)
     tag = models.TextField(null=True, blank=True, help_text="Séparer les tags par des virgules")
 
     def tags_list(self):
@@ -156,12 +169,10 @@ class OffreEmploi(models.Model):
             raise ValidationError("Une offre ne peut pas être associée à la fois à une entreprise et à un recruteur.")
 
         return self.titre
-
-
 # ✅ Table des CV
 class CV(models.Model):
     candidat = models.ForeignKey(Candidat, on_delete=models.CASCADE, related_name="cvs")
-    fichier = models.FileField(upload_to="cvs/")
+    fichier = models.FileField(upload_to="media/cvs/")
     extracted_text = models.TextField()
     date_telechargement = models.DateTimeField(default=timezone.now)
     score = models.FloatField(default=0)  # 🔥 Score de pertinence pour le tri
@@ -195,7 +206,7 @@ class Candidature(models.Model):
     date_candidature = models.DateTimeField(auto_now_add=True)
     statut = models.CharField(
         max_length=20,
-        choices=[("En attente", "En attente"), ("Acceptée", "Acceptée"), ("Refusée", "Refusée")],
+        choices=[("En attente", "En attente"), ("Entretien planifié", "Entretien planifié"), ("Refusée", "Refusée")],
         default="En attente"
     )
 

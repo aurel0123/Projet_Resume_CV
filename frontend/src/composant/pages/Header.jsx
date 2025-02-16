@@ -17,7 +17,7 @@ function Header() {
         
             <div className="Title">
               <img src="src/assets/img/export.png" className="w-10 h-10" alt="" />
-              <h3 className="text-log p-2">JobFindr</h3>
+              <h3 className="p-2 text-log">JobFindr</h3>
             </div>
 
             <div>
@@ -34,20 +34,19 @@ function Header() {
               </ul>
             </div>
               
-            <div className="Button gap-2">
+            <div className="gap-2 Button">
             <Link to='/login'>
-            <Button className='text-white' theme='primary'>
+            <Button className='text-white btn-sm' theme='primary'>
               Connexion
             </Button>
             </Link>
             <Link to='/register'>
-              <Button className='hover:text-white text-[#4361ee]' theme='secondary'>
+              <Button className='hover:text-white btn-sm text-[#4361ee]' theme='secondary'>
                 Inscription
               </Button>
             </Link>
             </div>
       </div>
-         
       <Container className='space-y-10'>
         <h2 className="tex">Rechercher un job ici...</h2>
         <div className="grid grid-cols-1 md:grid-cols-2">

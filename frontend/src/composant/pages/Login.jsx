@@ -1,8 +1,11 @@
-import { useState } from "react"
+import { useState, useContext } from "react"
 import { authService } from "../../services/AuthService"
 import toast, { Toaster } from 'react-hot-toast';
+import { AuthContext } from "../../Context/AuthContext";
+import {useNavigate} from 'react-router-dom'
 
 const Register = () => {
+  const navigate = useNavigate()
   const [formdata , setFormdata] = useState({
     email: '',
     password: '',
@@ -13,7 +16,7 @@ const Register = () => {
     password: '',
   })
 }
-
+const { login } = useContext(AuthContext);
   
   const handlechange = (e) => {
     const {name , value} = e.target
@@ -30,7 +33,10 @@ const Register = () => {
         const response =  await authService.login(formdata)
         console.log('Réponse du serveur :', response);
         resetForm()
+        console.log(response)
         toast.success('Connexion réussie'); 
+        login(response); 
+        navigate('/')
         
       }catch(e){
         console.log(e)

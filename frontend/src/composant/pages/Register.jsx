@@ -53,10 +53,10 @@ const Register = () => {
     }
       try{
         const response = await authService.register(formdata)
-        console.log('Réponse du serveur :', response.data);
+        console.log('Réponse du serveur :', response);
         resetForm()
         toast.success('Connexion réussie'); 
-        setTimeout(()=>navigate('/login'), 2000)
+        navigate('/login')
         
       }catch(e){
         console.log(e)
@@ -173,8 +173,8 @@ const Register = () => {
         
         <div className="">
               <div className="flex items-center justify-between mb-5">
-                <div className="form-check flex justify-center items-center">
-                  <input className="form-check-input mr-2" type="checkbox" id="remember-me"/>
+                <div className="flex items-center justify-center form-check">
+                  <input className="mr-2 form-check-input" type="checkbox" id="remember-me"/>
                   <label className="form-check-label " htmlFor="remember-me">
                     Souvenez-vous de moi
                   </label>

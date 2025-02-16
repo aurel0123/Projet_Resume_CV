@@ -1,4 +1,3 @@
-import React from "react";
 
 const Content = () => {
   return (
@@ -102,16 +101,16 @@ const Content = () => {
 
 
 
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 px-4 py-3 blocmm">
-          <div class="w-64 h-48 bg-gray-300 rounded-xl"></div>
-          <div class="w-64 h-48 bg-gray-300 rounded-xl"></div>
-          <div class="w-64 h-48 bg-gray-300 rounded-xl"></div>
-          <div class="w-64 h-48 bg-gray-300 rounded-xl"></div>
-          <div class="w-64 h-48 bg-gray-300 rounded-xl"></div>
-          <div class="w-64 h-48 bg-gray-300 rounded-xl"></div>
-          <div class="w-64 h-48 bg-gray-300 rounded-xl"></div>
-          <div class="w-64 h-48 bg-gray-300 rounded-xl"></div>
-          <div class="w-64 h-48 bg-gray-300 rounded-xl"></div>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 px-4 py-3 blocmm">
+          <div className="w-64 h-48 bg-gray-300 rounded-xl"></div>
+          <div className="w-64 h-48 bg-gray-300 rounded-xl"></div>
+          <div className="w-64 h-48 bg-gray-300 rounded-xl"></div>
+          <div className="w-64 h-48 bg-gray-300 rounded-xl"></div>
+          <div className="w-64 h-48 bg-gray-300 rounded-xl"></div>
+          <div className="w-64 h-48 bg-gray-300 rounded-xl"></div>
+          <div className="w-64 h-48 bg-gray-300 rounded-xl"></div>
+          <div className="w-64 h-48 bg-gray-300 rounded-xl"></div>
+          <div className="w-64 h-48 bg-gray-300 rounded-xl"></div>
         </div>
 
        </div>

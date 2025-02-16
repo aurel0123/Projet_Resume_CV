@@ -25,9 +25,11 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'email', 'phone', 'user_type', 'password', 'recruteur_info', 'entreprise_info' , 'is_staff']
+        fields = ['id', 'email', 'phone', 'user_type','nom', 'prenom', 'recruteur_info', 'entreprise_info' , 'is_staff']
 
 class OffreEmploiSerializer(serializers.ModelSerializer) : 
+    entreprise = EntrepriseAddationalSerializer(read_only=True)
+    recruteur = RecruteurAddationalSerializer(read_only=True)
     class Meta : 
         model = OffreEmploi
         fields = '__all__'
@@ -35,7 +37,6 @@ class OffreEmploiSerializer(serializers.ModelSerializer) :
 
 class CandidatureSerializer(serializers.ModelSerializer):
     cv_url = serializers.SerializerMethodField()
-    
     class Meta:
         model = Candidature
         fields = ['id', 'candidat', 'offre', 'cv', 'cv_url', 'lettre_motivation',
