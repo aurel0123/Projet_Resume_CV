@@ -1,27 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import Breadcrumb from './Breadcrumb';
 import { BookmarkCheck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const breadcrumbItems = [
   { text: 'Offres sauvegardées' }
 ];
 
 function Liked() {
-  const [savedJobs, setSavedJobs] = useState([]);
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showDialog, setShowDialog] = useState(false);
+  const [selectedJobId, setSelectedJobId] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // Récupérer les informations de l'utilisateur
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isLoggedIn = !!user.id;
+  const isCandidate = user.user_type === 'Candidat';
 
   useEffect(() => {
     const fetchSavedJobs = async () => {
       try {
-        // Récupérer les IDs des offres sauvegardées
         const savedJobIds = JSON.parse(localStorage.getItem('savedJobs') || '[]');
-        
-        // Récupérer toutes les offres
         const response = await fetch('http://127.0.0.1:8000/api/offres/');
         const allJobs = await response.json();
-        
-        // Filtrer pour ne garder que les offres sauvegardées
         const savedJobsData = allJobs.filter(job => savedJobIds.includes(job.id));
         setJobs(savedJobsData);
       } catch (error) {
@@ -39,6 +47,58 @@ function Liked() {
     const newSavedJobs = savedJobIds.filter(id => id !== jobId);
     localStorage.setItem('savedJobs', JSON.stringify(newSavedJobs));
     setJobs(jobs.filter(job => job.id !== jobId));
+  };
+
+  const handleApply = async (e) => {
+    e.preventDefault();
+    
+    if (!isLoggedIn || !isCandidate) {
+      setErrorMessage('Vous devez être connecté en tant que candidat pour postuler.');
+      return;
+    }
+
+    if (!selectedFile) {
+      setErrorMessage('Veuillez sélectionner un CV');
+      return;
+    }
+
+    setSubmitting(true);
+    setErrorMessage('');
+
+    const formData = new FormData();
+    formData.append('candidat', user.id);
+    formData.append('fichier', selectedFile);
+    formData.append('offre_id', selectedJobId);
+
+    try {
+      const response = await axios.post('http://127.0.0.1:8000/api/cvs/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${localStorage.getItem('access')}`,
+        }
+      });
+
+      if (response.status === 201 || response.status === 200) {
+        setShowDialog(false);
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
+        setSelectedFile(null);
+      }
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      setErrorMessage(
+        error.response?.data?.message || 
+        'Une erreur est survenue lors de l\'envoi de votre candidature'
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const closeDialog = () => {
+    setShowDialog(false);
+    setSelectedFile(null);
+    setErrorMessage('');
   };
 
   return (
@@ -90,12 +150,89 @@ function Liked() {
                   ))}
                 </div>
                 <div className="card-actions justify-end mt-4">
-                  <button className="btn btn-outline">En savoir plus</button>
-                  <button className="btn btn-primary">Postuler</button>
+                  <button 
+                    className="btn btn-outline btn-sm"
+                    onClick={() => navigate(`/offres/${job.id}`)}
+                  >
+                    En savoir plus
+                  </button>
+                  {isLoggedIn && isCandidate && (
+                    <button 
+                      className="btn hover:bg-[#3663EB] bg-[#3663EB] hover:text-white text-white btn-sm"
+                      onClick={() => {
+                        setSelectedJobId(job.id);
+                        setShowDialog(true);
+                      }}
+                    >
+                      Postuler
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Boîte de dialogue pour la candidature */}
+      {showDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="modal modal-open">
+            <div className="modal-box max-w-md w-full">
+              <h3 className="font-bold text-lg">Postuler à l'offre</h3>
+              {errorMessage && (
+                <div className="alert alert-error mt-4">
+                  <span>{errorMessage}</span>
+                </div>
+              )}
+              <form onSubmit={handleApply} className="space-y-4 py-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Votre CV (PDF)
+                  </label>
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={(e) => setSelectedFile(e.target.files[0])}
+                    className="file-input file-input-bordered w-full text-sm"
+                    required
+                  />
+                </div>
+                <div className="modal-action flex-wrap gap-2">
+                  <button 
+                    type="button" 
+                    className="btn btn-sm" 
+                    onClick={closeDialog}
+                  >
+                    Annuler
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="btn btn-sm hover:bg-[#3663EB] bg-[#3663EB] text-white" 
+                    disabled={submitting}
+                  >
+                    {submitting ? (
+                      <>
+                        <span className="loading loading-spinner"></span>
+                        Envoi en cours...
+                      </>
+                    ) : (
+                      'Envoyer ma candidature'
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Message de succès */}
+      {showSuccess && (
+        <div className="toast toast-start z-50">
+          <div className="alert alert-success text-white">
+            <span>Félicitations ! Votre candidature a été envoyée avec succès.</span>
+          </div>
         </div>
       )}
     </div>
