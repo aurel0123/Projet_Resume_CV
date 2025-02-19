@@ -3,7 +3,7 @@ import { authService } from "../../services/AuthService"
 import toast, { Toaster } from 'react-hot-toast';
 import { AuthContext } from "../../Context/AuthContext";
 import {useNavigate} from 'react-router-dom'
-
+import {Link} from 'react-router-dom'
 const Register = () => {
   const navigate = useNavigate()
   const [formdata , setFormdata] = useState({
@@ -90,7 +90,7 @@ const { login } = useContext(AuthContext);
               </div>
             </div> 
         <button type="submit" className="w-full text-[#FFFFFF] bg-[#696cff] focus:ring-4 focus:outline-hidden focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mb-6">Se connecter</button>
-        <div className="text-sm font-light text-[#6B7280] text-center">Nouveau sur notre plateforme ? <a href="#" className="font-medium text-[#696cff] hover:underline">Creer un compte</a>
+        <div className="text-sm font-light text-[#6B7280] text-center">Nouveau sur notre plateforme ? <Link to ="/register" className="font-medium text-[#696cff] hover:underline"> Créer un compte</Link>
 
         </div>
     </form>

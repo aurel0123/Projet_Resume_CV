@@ -12,12 +12,17 @@ import Profile from './composant/dashborduser/Profile';
 import Liked from './composant/dashborduser/Liked';
 import Dashboardadmin from './composant/dashboardAdmin/Dashboardadmin';
 import OffresEmploi from './composant/dashboardAdmin/OffresEmploi';
+import Candidature from './composant/dashboardAdmin/Candidature';
+import CandidaturesList from './composant/dashboardAdmin/CandidaturesList';
+import DashHome from './composant/dashboardAdmin/Home';
+import Details from './composant/pages/Details'
 function App() {
   return (
     <AuthProvider>
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/offres/:id" element={<Details />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashbord" element={<PrivateRoute element={<Dashbord />} userType={["Entreprise"]} />}  />
@@ -27,8 +32,10 @@ function App() {
           <Route path="offers" element={<MesJobs/>} />
         </Route>
         <Route path='/dashboardAdmin' element={<PrivateRoute element={<Dashboardadmin/>} allowTypes={["Entreprise", "Recruteur"]} />} >
-          <Route index element={<div>Dashboard Home</div>} /> 
+          <Route index element={<DashHome/>} /> 
           <Route path='offresemplois' element = {<OffresEmploi/>}/>
+          <Route path='candidatures' element={<Candidature/>} />
+          <Route path='candidatures/candidatureListes/:offreId' element ={<CandidaturesList/>} />
         </Route>
       </Routes>
     </Router>

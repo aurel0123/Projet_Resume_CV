@@ -35,8 +35,20 @@ class OffreEmploiSerializer(serializers.ModelSerializer) :
         fields = '__all__'
         read_only_fields = ('date_publication', )
 
+
+class CVSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CV
+        fields = "__all__"
+        extra_kwargs = {
+            'extracted_text': {'required': False}  # Le champ devient optionnel
+        }
+
 class CandidatureSerializer(serializers.ModelSerializer):
     cv_url = serializers.SerializerMethodField()
+    #offre =OffreEmploiSerializer(read_only=True)
+    candidat = CustomUserSerializer(read_only=True)
+    cv=CVSerializer(read_only=True)
     class Meta:
         model = Candidature
         fields = ['id', 'candidat', 'offre', 'cv', 'cv_url', 'lettre_motivation',
@@ -47,9 +59,4 @@ class CandidatureSerializer(serializers.ModelSerializer):
         if obj.cv:
             return obj.cv.fichier.url
         return None
-
-class CVSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CV
-        fields = '__all__'
         read_only_fields = ['extracted_text', 'date_telechargement', 'score']

@@ -57,11 +57,11 @@ const MesJobs = () => {
   const getStatusBadgeClass = (statut) => {
     switch (statut) {
       case 'En attente':
-        return ' badge-warning p-2 text-center ';
+        return ' badge-warning p-2 text-center text-white rounded-full px-4';
       case 'Entretien planifié':
-        return ' badge-success p-2 text-center ';
+        return ' badge-success p-2 text-center text-white rounded-full px-4';
       case 'Refusée':
-        return 'badge-error p-2 text-center ';
+        return 'badge-error p-2 text-center text-white rounded-full px-4';
       default:
         return 'badge';
     }

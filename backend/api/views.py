@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from django.contrib.auth import authenticate
 from django.db import transaction
+from django.db.models import Count
+from django.db.models.functions import TruncMonth
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import CustomUser, RecruteurAddational, EntrepriseAddational , OffreEmploi , Candidature , CV
 from .serializers import CustomUserSerializer , OffreEmploiSerializer ,CandidatureSerializer , CVSerializer , MotCleSerializer
@@ -13,7 +15,12 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib.auth.hashers import check_password
-#from .services import CVSearchService
+from .services import CandidatureSearchService
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.db.models import F
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -237,34 +244,6 @@ class CVViewSet(viewsets.ModelViewSet):
         except Exception as e:
             raise ValidationError(f"Erreur lors de l'extraction du texte du PDF: {str(e)}")
 
-""" 
-class SearchCVsAPIView(APIView):
-
-    
-    permission_classes = [IsAuthenticated]  # ✅ Vérifie que l'utilisateur est connecté
-
-    def post(self, request, offre_id):
-        user = request.user
-        
-        # Vérification du type d'utilisateur
-        if user.user_type not in ["Recruteur", "Entreprise"]:
-            return Response({"success": False, "error": "Accès non autorisé"}, status=403)
-
-        # Récupération de l'offre
-        offre = get_object_or_404(OffreEmploi, id=offre_id)
-        mots_cles = request.data.get("mots_cles", "").strip()
-
-        if not mots_cles:
-            return Response({"success": False, "error": "Veuillez saisir des mots-clés."}, status=400)
-
-        # Exécution de la recherche
-        service = CVSearchService()
-        ranked_cvs = service.search_cvs(offre, mots_cles, user)
-
-        # Sérialisation des résultats
-        serializer = CVSerializer(ranked_cvs, many=True)
-        
-        return Response({"success": True, "cvs": serializer.data}) """
 
 @api_view(['PUT', 'GET'])
 @permission_classes([permissions.IsAuthenticated])
@@ -423,3 +402,76 @@ def update_profile_image(request):
             {'error': 'Une erreur est survenue lors de la mise à jour de la photo de profil'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def search_candidatures(request, offre_id):
+    if request.user.user_type not in ["Recruteur", "Entreprise"]:
+        return JsonResponse({"success": False, "error": "Accès non autorisé"}, status=403)
+    
+    try:
+        offre = get_object_or_404(OffreEmploi, id=offre_id)
+        mots_cles = request.POST.get('mots_cles', '').strip()
+        nombre_candidatures = int(request.POST.get('nombre_candidatures', 5))
+        
+        if not mots_cles:
+            return JsonResponse({"success": False, "error": "Veuillez saisir des mots-clés."}, status=400)
+        
+        service = CandidatureSearchService()
+        top_candidatures = service.search_candidatures(offre, mots_cles, request.user)[:nombre_candidatures]
+        
+        results = [{
+            "candidature_id": candidature.id,
+            "cv_id": candidature.cv.id,
+            "candidat": candidature.cv.candidat.email,
+            "score": round(candidature.cv.score, 2),
+            "date_candidature": candidature.date_candidature.strftime("%Y-%m-%d %H:%M"),
+            "statut": candidature.statut
+        } for candidature in top_candidatures]
+        
+        return JsonResponse({"success": True, "candidatures": results})
+        
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def get_dashboard_stats(request):
+    try:
+        # Statistiques générales
+        total_offres = OffreEmploi.objects.count()
+        total_candidatures = Candidature.objects.count()
+        
+        # Calcul du taux de conversion
+        taux_conversion = round((Candidature.objects.filter(
+            statut='Entretien planifié').count() / total_candidatures) * 100 
+            if total_candidatures > 0 else 0, 2)
+        
+        # Statuts des candidatures
+        candidatures_by_status = Candidature.objects.values('statut')\
+            .annotate(count=Count('id'))
+        
+        # Évolution des candidatures par mois
+        candidatures_par_mois = Candidature.objects.annotate(
+            mois=TruncMonth('date_candidature')
+        ).values('mois').annotate(
+            nombre=Count('id')
+        ).order_by('mois')
+        
+        # Offres récentes
+        offres_recentes = OffreEmploi.objects.order_by('-date_publication')[:5]\
+            .annotate(nombreCandidatures=Count('candidatures'))\
+            .values('titre', 'date_publication', 'nombreCandidatures')
+
+        return Response({
+            'totalOffres': total_offres,
+            'totalCandidatures': total_candidatures,
+            'tauxConversion': taux_conversion,
+            'candidaturesByStatus': list(candidatures_by_status),
+            'candidaturesParMois': list(candidatures_par_mois),
+            'offreRecente': list(offres_recentes)
+        })
+        
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)

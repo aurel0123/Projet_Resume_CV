@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { EllipsisVertical } from 'lucide-react';
+import Breadcrumb from "../dashborduser/Breadcrumb";
 
 // Constantes
 const API_BASE_URL = 'http://127.0.0.1:8000/api';
@@ -21,6 +22,7 @@ const initialFormState = {
 
 const OffresEmploi = () => {
   // États
+  const breadcrum = [{ text: "Création une offre" }];
   const [offres, setOffres] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -183,6 +185,7 @@ const OffresEmploi = () => {
   // Composants de formulaire
   const renderStep1 = () => (
     <div className="space-y-6">
+      
       <h3 className="font-bold text-lg">Détails du poste</h3>
       
       <div>
@@ -354,6 +357,7 @@ const OffresEmploi = () => {
   // Rendu principal
   return (
     <div className="container mx-auto p-4">
+      <Breadcrumb items={breadcrum} />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Offres d'emploi</h1>
         {user?.user_type === 'Entreprise' && (

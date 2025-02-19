@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { CgMenuLeftAlt } from "react-icons/cg";
 import logo from '../../assets/img/logo.svg';
 import {
@@ -7,23 +7,28 @@ import {
   Search,
   Bell,
   Sun,
-  Home,
+  Heart,
   X
 } from 'lucide-react';
-import { NavLink } from "react-router-dom";
+import { NavLink , Link} from "react-router-dom";
 import {Outlet} from 'react-router-dom'
-
+import { AuthContext } from '../../Context/AuthContext';
 
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeItem, setActiveItem] = useState('Accueil');
+  const { user, logout } = useContext(AuthContext);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
+  const toggleDropdown = () => {
+      setDropdownOpen(!dropdownOpen);
+  };
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
   const menuItems = [
-    { icon: Home, text: "Licked", path: "/interfaceuser/" },
+    { icon: Heart , text: "Licked", path: "/interfaceuser/" },
     { icon: User, text: "Profile", path: "/interfaceuser/profile" },
     { icon: FileText, text: "Mes Offres Emplois", path: "/interfaceuser/offers" }
   ];
@@ -84,14 +89,16 @@ const Dashboard = () => {
         <div className="flex flex-col w-full h-full bg-white border-r">
           <div className="flex items-center justify-between p-4 border-b logo">
             <div className="flex items-center space-x-2">
-              <img 
-                src={logo} 
-                width={37} 
-                height={37} 
-                alt="JobFind Logo"
-                className="transition-transform duration-300 hover:scale-110" 
-              />
-              <span className="text-xl font-semibold">JobFind</span>
+              <Link to ="/" className="flex items-center space-x-2">
+                <img 
+                  src={logo} 
+                  width={37} 
+                  height={37} 
+                  alt="JobFind Logo"
+                  className="transition-transform duration-300 hover:scale-110" 
+                />
+                <span className="text-xl font-semibold">JobFind</span>
+              </Link>
             </div>
             <button
               className="text-gray-600 transition-transform duration-200 lg:hidden hover:text-gray-800 hover:scale-110"
@@ -141,9 +148,41 @@ const Dashboard = () => {
             <button className="p-2 transition-all duration-200 rounded-lg hover:bg-gray-100 hover:scale-110">
               <Sun size={20} className="text-gray-600" />
             </button>
-            <button className="flex items-center justify-center w-8 h-8 transition-transform duration-200 bg-gray-200 rounded-full hover:scale-110">
-              <User size={20} className="text-gray-600" />
-            </button>
+             {/* Bouton User avec menu dropdown */}
+                <div className="relative">
+                    <button
+                        className="flex items-center justify-center w-8 h-8 transition-transform duration-200 bg-gray-200 rounded-full hover:scale-110"
+                        onClick={toggleDropdown}
+                    >
+                        <User size={20} className="text-gray-600" />
+                    </button>
+
+                    {/* Menu déroulant */}
+                    {dropdownOpen && (
+                        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-30">
+                            <ul className="py-2 text-gray-700">
+                                <li>
+                                    <a href="http://localhost:5173/interfaceuser/profile" className="block px-4 py-2 hover:bg-gray-100">
+                                        Mon Profil
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="interfaceuser/" className="block px-4 py-2 hover:bg-gray-100">
+                                        Dashboard
+                                    </a>
+                                </li>
+                                <li>
+                                    <button
+                                        onClick={logout}
+                                        className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                                    >
+                                        Déconnexion
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    )}
+                </div>
           </div>
         </div>
 

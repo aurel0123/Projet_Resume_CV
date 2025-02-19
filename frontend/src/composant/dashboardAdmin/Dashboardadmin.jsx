@@ -12,7 +12,7 @@ import {
   Settings,
   X
 } from 'lucide-react';
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import {Outlet} from 'react-router-dom'
 import { AuthContext } from '../../Context/AuthContext';
 
@@ -92,16 +92,16 @@ function Dashboardadmin() {
     >
       <div className="flex flex-col w-full h-full bg-white border-r">
         <div className="flex items-center justify-between p-4 border-b logo">
-          <div className="flex items-center space-x-2">
-            <img 
-              src={logo} 
-              width={37} 
-              height={37} 
-              alt="JobFind Logo"
-              className="transition-transform duration-300 hover:scale-110" 
-            />
-            <span className="text-xl font-semibold">JobFind</span>
-          </div>
+              <Link to ="/" className="flex items-center space-x-2">
+                <img 
+                  src={logo} 
+                  width={37} 
+                  height={37} 
+                  alt="JobFind Logo"
+                  className="transition-transform duration-300 hover:scale-110" 
+                />
+                <span className="text-xl font-semibold">JobFind</span>
+              </Link>
           <button
             className="text-gray-600 transition-transform duration-200 lg:hidden hover:text-gray-800 hover:scale-110"
             onClick={toggleSidebar}
@@ -163,7 +163,7 @@ function Dashboardadmin() {
 
                     {/* Menu déroulant */}
                     {dropdownOpen && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
+                        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-30">
                             <ul className="py-2 text-gray-700">
                                 <li>
                                     <a href="/profile" className="block px-4 py-2 hover:bg-gray-100">
@@ -171,7 +171,7 @@ function Dashboardadmin() {
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="/dashboard" className="block px-4 py-2 hover:bg-gray-100">
+                                    <a href="/dashboardAdmin" className="block px-4 py-2 hover:bg-gray-100">
                                         Dashboard
                                     </a>
                                 </li>

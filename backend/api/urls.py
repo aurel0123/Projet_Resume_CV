@@ -16,7 +16,8 @@ urlpatterns = [
     path('api/profile/image/', views.update_profile_image),
     path('api/offres-entreprise/', views.get_offres_par_entreprise , name = 'offres par entreprise'),
     path('api/offres-recruteur/', views.get_offres_par_recruteur , name = 'offres par recruteur'),
-    #path('api/cvs/search/<int:offre_id>/', views.SearchCVsAPIView, name='search_cvs'),
+    path('api/cvs/search/<int:offre_id>/', views.search_candidatures, name='search_cvs'),
+    path('api/dashboard/stats/', views.get_dashboard_stats, name='dashbord'),
     path('api/', include(router.urls)),  # Inclusion du router (si tu ajoutes un ViewSet)
 
 ]

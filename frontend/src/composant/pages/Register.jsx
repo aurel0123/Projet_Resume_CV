@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { authService } from "../../services/AuthService"
 import toast, { Toaster } from 'react-hot-toast';
-import {useNavigate} from 'react-router-dom'
+import {useNavigate, Link} from 'react-router-dom'
+
 const Register = () => {
   const navigate = useNavigate()
   const [formdata , setFormdata] = useState({
@@ -185,7 +186,7 @@ const Register = () => {
               </div>
             </div> 
         <button type="submit" className="w-full text-[#FFFFFF] bg-[#696cff] focus:ring-4 focus:outline-hidden focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mb-6">S'inscrire</button>
-        <div className="text-sm font-light text-[#6B7280] text-center">Vous avez déjà un compte ? <a href="#" className="font-medium text-[#696cff] hover:underline">Connexion</a>
+        <div className="text-sm font-light text-[#6B7280] text-center">Vous avez déjà un compte ? <Link to ="/login" className="font-medium text-[#696cff] hover:underline"> Connexion</Link>
 
         </div>
     </form>
