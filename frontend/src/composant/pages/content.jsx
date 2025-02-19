@@ -74,8 +74,46 @@ const Content = () => {
 
   // Autres fonctions de gestion restent identiques
   const handleApply = async (e) => {
-    // ... reste du code handleApply
+    e.preventDefault();
+    if (!selectedFile || !user.id || !selectedJobId) {
+      setErrorMessage('Veuillez remplir tous les champs requis');
+      return;
+    }
+
+    setSubmitting(true);
+    setErrorMessage('');
+
+    const formData = new FormData();
+    formData.append('candidat', user.id);
+    formData.append('fichier', selectedFile);
+    formData.append('offre_id', selectedJobId);
+
+    try {
+      const response = await axios.post('http://127.0.0.1:8000/api/cvs/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${localStorage.getItem('access')}`,
+        }
+      });
+
+      if (response.status === 201 || response.status === 200) {
+        setShowDialog(false);
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
+        setSelectedFile(null);
+      }
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      setErrorMessage(
+        error.response?.data?.message || 
+        'Une erreur est survenue lors de l\'envoi de votre candidature'
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+
 
   const closeDialog = () => {
     setShowDialog(false);
