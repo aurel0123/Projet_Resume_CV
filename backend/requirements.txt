@@ -1,0 +1,6 @@
+Django==4.2
+djangorestframework==3.14.0
+django-cors-headers==4.2.0
+gunicorn==21.2.0
+psycopg2-binary==2.9.6  # Si tu utilises PostgreSQL
+mysqlclient==2.1.1  # Si tu utilises MySQL
